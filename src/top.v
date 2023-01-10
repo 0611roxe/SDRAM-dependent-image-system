@@ -32,10 +32,9 @@ wire [12:0]		sdram_addr;
 wire [1:0]		sdram_dqm;
 wire [23:0]		sdram_dq;
 
-assign vga_rgb = 	{vga_rgb_t[7:5], 5'b0,
-					 vga_rgb_t[4:2], 5'b0,
-					 vga_rgb_t[1:0], 5'b0
-					};
+assign vga_rgb = 	{{vga_rgb_t[15:11], vga_rgb_t[15:13]},
+			{vga_rgb_t[10:5], vga_rgb_t[10:9]},
+			{vga_rgb_t[4:0], vga_rgb_t[4:2]}};
 
 uart_rx u_uart_rx(
 	.sclk					(clk_sys50m	),
