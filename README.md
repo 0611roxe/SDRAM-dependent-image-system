@@ -22,3 +22,4 @@ Vivado 2019.2 + ModelSim 10.5
 1.   板级功能测试
 2.   修改RGB失真BUG
 3.   OV5640摄像头实时图像采集显示
+4.   C++ Model模拟器
