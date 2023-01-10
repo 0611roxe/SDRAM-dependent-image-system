@@ -9,7 +9,7 @@
 ![image](https://user-images.githubusercontent.com/100147572/211508027-63aff823-c914-4694-ae8c-39060eae4a4f.png)
 
 
-#### 尚存BUG：
+### 尚存BUG：
 
 1.   RGB颜色失真，LCD驱动使用RGB888格式，但串口单次仅接收8bit数据，不适用于RGB565/233格式，需要进行色彩转换
 2.   显示概率出现白条，SDRAM控制器时序问题，数据写入和读出时可能存在丢失
