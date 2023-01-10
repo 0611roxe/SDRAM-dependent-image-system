@@ -34,7 +34,7 @@ wire [23:0]		sdram_dq;
 
 assign vga_rgb = 	{vga_rgb_t[7:5], 5'b0,
 					 vga_rgb_t[4:2], 5'b0,
-					 vga_rgb_t[1:0], 5'b0,
+					 vga_rgb_t[1:0], 5'b0
 					};
 
 uart_rx u_uart_rx(
