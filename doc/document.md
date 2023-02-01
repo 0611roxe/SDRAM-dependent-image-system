@@ -4,7 +4,7 @@
 
 UART设计时序
 
-![UART接收模块](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221223190801597.png)
+![img](https://gitee.com/niu-yunding/niu_sb/raw/master/img/202301082028696.png)
 
 | 信号名      | 方向     | 描述                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
@@ -19,7 +19,7 @@ UART设计时序
 
 设计时序分析：`rx`低电平作为数据发送的起始，之后将`rx`打两拍进行跨时钟域的操作，并且将`rx_r2`打拍结果寄存下来。之后使用`~rx_r2&rx_r3`捕获时钟的下降沿作为`rx_flag`拉高的条件。`rx_flag`拉高之后`baud_cnt`开始自增，比特开始传输。`bit_flag`在`baud_cnt`计数器到最大值一半时拉高，获得稳定的控制信号。`bit_flag`拉高，`bit_cnt`计数器自增直到一帧数据传输结束。传输结束后，即`bit_cnt == 8`时，`po_flag`拉高，一次传输结束。
 
-![UART发送模块](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221225135823709.png)
+![QQ图片20230108202948](https://gitee.com/niu-yunding/niu_sb/raw/master/img/202301082030864.jpg)
 
 | 信号名      | 方向     | 描述                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
@@ -42,13 +42,12 @@ SDRAM容量 = 数据位宽 \* 存储单元数量 （bank数 \* 行地址 \* 列�
 
 引脚说明（2M \* 4Bank \* 16）：
 
-![image-20221226172957239](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221226172957239.png)
+![image](https://user-images.githubusercontent.com/100147572/216016643-afd4e625-b876-4c55-91a4-e34e2a440650.png)
 
-![image-20221226173024762](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221226160123417.png)
+![image](https://user-images.githubusercontent.com/100147572/216016696-f8cd6e7c-42f0-4920-ad3f-62b890421450.png)
 
 在进行操作之前，SDRAM必须进行初始化。初始化需要在电源和时钟都稳定之后进行，在100μs延迟中不可以执行任何命令（不包括INHIBIT和NOP），在200us内INHIBIT和NOP命令都有可能被执行。在至少一条INHIBIT或NOP被执行之后，在100μs内PRECHARGE命令将会被执行。所有的bank都必须被precharge，这会使所有的bank经过两次AUTO REFRESH后进入空闲状态，这时进入模式寄存器配置。寄存器模式需要加载任何可执行的命令否则它会充电到一个不可预知的状态。
 
-![image-20221226161438266](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221226161438266.png)
 
 ### 初始化模块：
 
@@ -59,7 +58,6 @@ SDRAM容量 = 数据位宽 \* 存储单元数量 （bank数 \* 行地址 \* 列�
 | NOP               | 0    | 1    | 1    | 1    |
 | Mode register set | 0    | 0    | 0    | 0    |
 
-![image-20221226173057586](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221226173057586.png)
 
 | 地址线     | Value              | 说明                                            |
 | ---------- | ------------------ | ----------------------------------------------- |
@@ -91,27 +89,29 @@ tRC:63ns
 
 刷新时序：
 
-![image-20221226214635601](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221226214635601.png)
+![image](https://user-images.githubusercontent.com/100147572/216017262-1793f70a-251a-4a65-86d8-9b787da11506.png)
 
 ### 写模块
 
 SDRAM状态机：
 
-![image-20221227192716870](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221227192716870.png)
+![image](https://user-images.githubusercontent.com/100147572/216017099-7115a698-354c-40a9-9a2b-56129437d0b6.png)
 
 Write Command：
 
-![image-20221227193834985](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221227193834985.png)
+![image](https://user-images.githubusercontent.com/100147572/216018012-c8ba4395-533c-4ee8-a84e-d07167055fd1.png)
 
 Write Without Precharge：
 
-![image-20221227195452715](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221227195452715.png)
+![image](https://user-images.githubusercontent.com/100147572/216018455-b8a59448-81bf-4ee9-8895-3876ba9b7e96.png)
+
+Write With Precharge:
+
+![image](https://user-images.githubusercontent.com/100147572/216018608-0429f0fe-479f-4c3b-a4f0-381d78501397.png)
 
 SDRAM写时序图：
 
-![image-20221228141520082](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221228141520082.png)
-
-![](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20221228142127982.png)
+![image](https://user-images.githubusercontent.com/100147572/216017919-964efda5-82cd-4f1c-a64e-5abdafa48142.png)
 
 SDRAM写内部时序：
 
