@@ -151,7 +151,7 @@ SDRAM写内部时序：
 
 时序设计：
 
-![image-20230104195306799](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20230104195306799.png)
+![image](https://user-images.githubusercontent.com/100147572/216019674-eb1a37b2-98a5-4857-8736-df45dad9d301.png)
 
 | 端口        | 方向     | 描述                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
@@ -192,11 +192,9 @@ VGA显示原理：
 
 RGB端并不是所有时间都在传送像素信息，由于CRT的电子束从上一行的行尾到下一行的行头需要时间，从屏幕的右下角回到左上角开始下一帧也需要时间，这时RGB送的电压值为0（黑色），这些时间称为电子束的行消隐时间和场消隐时间，行消隐时间以像素为单位，帧消隐时间以行为单位。
 
-![Uart_rx.drawio](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/Uart_rx.drawio.png)
-
 VGA显示信号设计原理：
 
-![image-20230107112701650](https://for-pic-store.oss-cn-hangzhou.aliyuncs.com/image-20230107112701650.png)
+![image](https://user-images.githubusercontent.com/100147572/216019928-f3ab70e9-1f39-4e88-a742-846ad69e3a31.png)
 
 | 端口      | 方向   | 描述                                                      |
 | --------- | ------ | --------------------------------------------------------- |
