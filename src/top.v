@@ -8,7 +8,7 @@ module top(
 	`endif	
 	output wire				vga_hsync,
 	output wire				vga_vsync,
-	output wire [23:0]		vga_rgb
+	output wire [23:0]			vga_rgb
 );
 
 wire			clk_sys33_3m;
@@ -16,7 +16,7 @@ wire			clk_sys100m;
 wire			clk_sys50m;
 wire [7:0]		uart_data;
 wire			uart_flag;
-wire			data_req;
+wire			vga_en;
 wire [23:0]		img_data;
 wire 			rfifo_rd_ready;
 wire [23:0]		vga_rgb_t;
@@ -31,10 +31,11 @@ wire [1:0]		sdram_bank;
 wire [12:0]		sdram_addr;
 wire [1:0]		sdram_dqm;
 wire [23:0]		sdram_dq;
+wire			sdram_init_done;
 
 assign vga_rgb = 	{{vga_rgb_t[15:11], vga_rgb_t[15:13]},
-			{vga_rgb_t[10:5], vga_rgb_t[10:9]},
-			{vga_rgb_t[4:0], vga_rgb_t[4:2]}};
+					{vga_rgb_t[10:5], vga_rgb_t[10:9]},
+					{vga_rgb_t[4:0], vga_rgb_t[4:2]}};
 
 uart_rx u_uart_rx(
 	.sclk					(clk_sys50m	),
@@ -46,14 +47,14 @@ uart_rx u_uart_rx(
 
 vga_drive u_vga_drive(
 	.sclk					(clk_sys33_3m),
-	.s_rst_n				(s_rst_n & rfifo_rd_ready),
+	.s_rst_n				(sdram_init_done),
 	`ifdef TFT_LCD
 	.lcd_de					(lcd_de		),
 	`endif
 	.vga_hsync				(vga_hsync	),
 	.vga_vsync				(vga_vsync	),
 	.vga_rgb				(vga_rgb_t 	),
-	.data_req				(data_req	),
+	.vga_en					(vga_en		),
 	.img_data				(img_data	)
 );
 
@@ -64,7 +65,7 @@ clk_wiz_0 u_clk_wiz(
 	.reset					(~s_rst_n	), 		// input reset
 	.locked					(),					// output locked
 	.clk_in1				(sclk		)
-);   
+);
 
 sdram_top u_sdram_top(
 	.sclk				(clk_sys100m	),
@@ -72,20 +73,21 @@ sdram_top u_sdram_top(
 	.sdram_clk			(sdram_clk		),
 	.sdram_cke			(sdram_cke		),
 	.sdram_cs_n			(sdram_cs_n		),
-	.sdram_cas_n		(sdram_cas_n	),
-	.sdram_ras_n		(sdram_ras_n	),
+	.sdram_cas_n			(sdram_cas_n	),
+	.sdram_ras_n			(sdram_ras_n	),
 	.sdram_we_n			(sdram_we_n		),
 	.sdram_bank			(sdram_bank		),
 	.sdram_addr			(sdram_addr		),
 	.sdram_dqm			(sdram_dqm		),
 	.sdram_dq			(sdram_dq		),
+	.sdram_init_done		(sdram_init_done),
 	.wfifo_wclk			(clk_sys50m		),
-	.wfifo_wr_en		(uart_flag		),
-	.wfifo_wr_data		({16'h0, uart_data}),
+	.wfifo_wr_en			(uart_flag		),
+	.wfifo_wr_data			({16'h0, uart_data}),
 	.rfifo_rclk			(clk_sys33_3m	),
-	.rfifo_rd_en		(data_req		),
-	.rfifo_rd_data		(img_data		),
-	.rfifo_rd_ready		(rfifo_rd_ready	)
+	.rfifo_rd_en			(vga_en			),
+	.rfifo_rd_data			(img_data		),
+	.rfifo_rd_ready			(rfifo_rd_ready	)
 );
 
 endmodule
