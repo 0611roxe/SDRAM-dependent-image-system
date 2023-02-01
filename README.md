@@ -8,6 +8,7 @@ Vivado 2019.2 + ModelSim 10.5
 3.   自动读写FIFO，深度512bit。写FIFO深度超过256bit时自动读入SDRAM，读FIFO深度小于256bit时自动写入VGA/LCD驱动
 4.   支持800*480分辨率的VGA/LCD驱动模块
 5.   已通过Vivado综合
+
 ![image](https://user-images.githubusercontent.com/100147572/216013259-19d72351-1e46-4a20-ad95-f45a0511561f.png)
 ![image](https://user-images.githubusercontent.com/100147572/216013490-6c6febf8-bcb7-4f7d-acd1-83a531a92bd3.png)
 
