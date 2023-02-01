@@ -3,25 +3,13 @@ Vivado 2019.2 + ModelSim 10.5
 
 ### 已经实现：
 
-1.   串口接收模块，单次接收8bit数据
+1.   串口接收模块，单次接收8bit数据,115200bps
 2.   13条地址线，24位数据端口的SDRAM控制器，支持读写和自动刷新指令
 3.   自动读写FIFO，深度512bit。写FIFO深度超过256bit时自动读入SDRAM，读FIFO深度小于256bit时自动写入VGA/LCD驱动
 4.   支持800*480分辨率的VGA/LCD驱动模块
 5.   已通过Vivado综合
-![image](https://user-images.githubusercontent.com/100147572/211507745-3a985be6-e28a-4b94-86b3-081a2436006d.png)
-![image](https://user-images.githubusercontent.com/100147572/211508027-63aff823-c914-4694-ae8c-39060eae4a4f.png)
-
-
-### 尚存BUG：
-
-1.   RGB颜色失真，LCD驱动使用RGB888格式，但串口单次仅接收8bit数据，不适用于RGB565格式，需要进行色彩转换（已解决，按照显示协议重新进行位拼接即可）
-
-2.   显示概率出现白条，SDRAM控制器时序问题，数据写入和读出时可能存在丢失
-
-     1.   解决思路：白条应该是读到了0000的数据，可能存在如下情况：
-          1.   vga驱动读的速度比写入更快，读到了init的初始化数据->控制初始化结束之后才能启动vga驱动模块
-          2.   写入一部分数据后进入空闲状态，没有等到下一个256bit的写入数据时发起了读请求？
-          3.   ？？？感觉时序控制上需要配合，需要有信号将读写模块(sdram顶层)和vga驱动串联起来，而不是完全并行
+![image](https://user-images.githubusercontent.com/100147572/216013259-19d72351-1e46-4a20-ad95-f45a0511561f.png)
+![image](https://user-images.githubusercontent.com/100147572/216013490-6c6febf8-bcb7-4f7d-acd1-83a531a92bd3.png)
 
 ### ToDo：
 
