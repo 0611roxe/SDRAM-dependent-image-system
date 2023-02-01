@@ -7,11 +7,12 @@ module vga_drive (
 	`endif
 	output wire				vga_hsync,
 	output wire				vga_vsync,
-	output wire [23:0]		vga_rgb,
+	output wire [23:0]			vga_rgb,
 
-	output wire				data_req,
-	input [23:0]			img_data
+	output reg				vga_en,
+	input [23:0]				img_data
 );
+
 localparam H_TOTAL_TIME = 1056;
 localparam H_OZVAL_TIME = 800;
 localparam H_SYNC_TIME = 128;
@@ -26,7 +27,7 @@ localparam V_FRONT_PORCH = 10;
 
 reg [10:0]			cnt_h;
 reg [9:0]			cnt_v;
-reg					vga_en;
+wire				data_req;
 
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
@@ -48,7 +49,7 @@ end
 
 // always @(posedge sclk or negedge s_rst_n) begin
 // 	if(s_rst_n == 1'b0)
-// 		vga_rgb <= 'd0;
+// 		vga_rgb <= 24'hFFFFFF;
 // 	else if(cnt_v >= (V_SYNC_TIME + V_BACK_PORCH) && cnt_v < (V_SYNC_TIME + V_BACK_PORCH + V_OZVAL_TIME)) begin
 // 		if(cnt_h >= (H_SYNC_TIME + H_BACK_PORCH - 1) && cnt_h < (H_SYNC_TIME + H_BACK_PORCH + 200 - 1))
 // 			vga_rgb <= 24'hff0000;
@@ -61,7 +62,7 @@ end
 // 		else 
 // 			vga_rgb <= 24'h000000;
 // 	end	else
-// 		vga_rgb <= 24'h000000;
+// 		vga_rgb <= 24'hFFFFFF;
 // end	
 
 always @(posedge sclk) begin
@@ -69,9 +70,9 @@ always @(posedge sclk) begin
 end
 
 assign data_req = 	((cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1)) && 
-					(cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1 + H_OZVAL_TIME)) &&
-					cnt_v >= (V_SYNC_TIME + V_BACK_PORCH) && 
-					cnt_v < (V_SYNC_TIME + V_BACK_PORCH + V_OZVAL_TIME)) ? 1'b1 : 1'b0;
+			(cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1 + H_OZVAL_TIME)) &&
+			cnt_v >= (V_SYNC_TIME + V_BACK_PORCH) && 
+			cnt_v < (V_SYNC_TIME + V_BACK_PORCH + V_OZVAL_TIME)) ? 1'b1 : 1'b0;
 assign vga_rgb = (vga_en == 1'b1) ? img_data : 24'h0;
 assign vga_hsync = (cnt_h < H_SYNC_TIME) ? 1'b1 : 1'b0;
 assign vga_vsync = (cnt_v < V_SYNC_TIME) ? 1'b1 : 1'b0;
