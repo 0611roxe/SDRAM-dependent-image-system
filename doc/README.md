@@ -241,4 +241,101 @@ VGA显示信号设计原理：
      2.   原因：白条即显示为`24'h0`的部分，原因是SDRAM没有初始化完成，VGA驱动已经开始读数据，导致存在显示白条。这个BUG是难以复现完全相同显示的，运行时可能不会出现，也可能出现位置大小不一的白条。
      3.   解决方案：让SDRAM初始化的结束信号作为VGA驱动的复位信号，只有当SDRAM完全准备好后才允许VGA去获取数据。注意，这里未发现读写速度不平衡导致此现象，原因在我们使用自动读写FIFO保证了数据是批量写入和读出的，也就是说不存在单个像素点的读写速度差异。当然，如果大家在测试过程中发现了读写速度问题导致的显示BUG，请联系我。
 
+## OV5640 Cam
 
+**主要特性**：
+
+1.   active array size：2592 x 1944 即500W像素
+2.   support for output formats：RAW RGB、RGB565/555/444...
+3.   采用标准串行SCCB接口，与IIC接口相同
+4.   支持自动调焦
+5.   输入时钟频率：6~27MHz
+
+引脚描述（部分），详见附录文档官方手册：
+
+| Signal Name | Pin Type | Description            |
+| ----------- | -------- | ---------------------- |
+| PWDN        | input    | 高电平有效，power down |
+| RESETB      | input    | 复位信号，低电平有效   |
+| SIOC        | input    | SCCB输入时钟           |
+| SIOD        | I/O      | SCCB数据               |
+| VSYNC       | I/O      | DVP VSYNC输出          |
+| HREF        | I/O      | DVP HREF输出           |
+| XVCLK       | input    | 系统时钟               |
+| PCLK        | I/O      | DVP PCLK输出           |
+| D0-D7       | I/O      | DVP数据输出的0-7端口   |
+
+**Block Diagram(系统块图)**：
+
+![image-20230202173744972](https://user-images.githubusercontent.com/100147572/216306587-0763852e-dfac-499d-bc3a-f4ac026a695d.png)
+
+### 上电时序：
+
+![image-20230202173917425](https://user-images.githubusercontent.com/100147572/216306933-fbc43139-f3c6-4132-be47-2636b65a72f2.png)
+
+我们控制tx为标准需求的时间+1ms来保证时序确定完成，同样采取计数器方法来控制时间。
+
+### SCCB分析
+
+Watch document for details.
+
+主机设备信号描述（对从机来说信号方向相反，其余字段描述相同）：
+
+| Signal name | Signal Type | Description                                                  |
+| ----------- | ----------- | ------------------------------------------------------------ |
+| SCCB_E      | Output      | 串行片选信号，总线空闲时为1，主机断言传输或者暂停模式时为0，当没有连接时默认为高电平。 |
+| SIO_C       | Output      | IIC时钟，总线空闲时拉高。单bit传输时间被定义为tCYC，通常为10us。 |
+| SIO_D       | I/O         | I/O数据                                                      |
+| PWDN        | Output      | Power down输出                                               |
+
+SIO_C的最小时间tCYC为10us，即最大频率为100K。
+
+**3线写事务：**
+
+![image-20230202181620807](https://user-images.githubusercontent.com/100147572/216306963-3fa90a11-f177-435d-87f7-66d85e7f1b7f.png)
+
+数据传输开始：
+
+![image-20230202181644854](https://user-images.githubusercontent.com/100147572/216306996-9af817de-a620-44b4-b941-24f1a5b972f1.png)
+
+数据传输结束：
+
+![image-20230202181656615](https://user-images.githubusercontent.com/100147572/216307006-248f6c43-5f2d-4826-8554-303c87de36eb.png)
+
+**Phrase描述：**9bit/phrase
+
+ID Address：匹配从机地址，D1-D7+读写标志信号，可以识别128个从机，OV5640的Slave ID Address为0x78，数据传输方向为MSB->LSB。
+
+![image-20230202181946378](https://user-images.githubusercontent.com/100147572/216308456-972f7c65-f702-47a5-b606-76de8a831c6b.png)
+
+Sub-address：匹配指定从机上寄存器的地址
+
+![image-20230202182154698](https://user-images.githubusercontent.com/100147572/216308445-e08a631b-3680-4ef2-97ad-6ef68600d74a.png)
+
+IIC的写时序和SCCB相同，BYTE WRITE模式下的单字节写（一次只写入一个数据）图如下：
+
+![image-20230202183212406](https://user-images.githubusercontent.com/100147572/216308408-94d206ac-357c-40a8-9eeb-68ad1fd94934.png)
+
+对于OV5640，由于寄存器地址也有16bit，我们可以将上图改造为：
+
+![image-20230202183318546](https://user-images.githubusercontent.com/100147572/216308386-468e2ddb-f7b9-4d08-9ee4-fa2d201a5f38.png)
+
+从而得到OV5640的写时序。但是对于读时序而言，IIC和SCCB存在不同，IIC的读时序如图：
+
+![image-20230202183452802](https://user-images.githubusercontent.com/100147572/216308372-ba94a031-3be7-4c3b-a609-d06976a81f98.png)
+
+它需要两个START阶段，并且在数据传输结束后拉高ACK来表示NO ACK，之后再给到结束位。在第二次START阶段中的CONTROL BTYE部分最后1bit要置为1表示数据传输开始。但是对于OV5640而言，它并不支持我们对于这个时序图进行改造为下面的形式：
+
+![image-20230202183814450](https://user-images.githubusercontent.com/100147572/216308350-22bf1184-648c-4201-8930-eb28ac5f9b72.png)
+
+而是需要在第二个START之前插入一个STOP位，如：
+
+![image-20230202183853138](https://user-images.githubusercontent.com/100147572/216308329-0f10490d-5348-4952-bc6b-b7331328b930.png)
+
+即2Phrase Write + 2 Phrase Read。
+
+### OV5640 IIC时序
+
+以读取OV5640的`0x300a`寄存器为例，这个寄存器是一个只读的默认寄存器，其中的值为`0x56`。图片尺寸较大，建议下载之后再缩放，其中蓝线部分表示ACK。此时序图设计和上面的2Phrase Write + 2 Phrase Read设计完全相同，只需要注意`div_clk`是`icc_sclk`时钟频率的二倍。
+
+![image-20230202184256580](https://user-images.githubusercontent.com/100147572/216308321-dcf711b2-6ea0-43d1-b47d-5fd78af14cd6.png)
