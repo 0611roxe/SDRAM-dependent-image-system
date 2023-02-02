@@ -302,7 +302,7 @@ SIO_C的最小时间tCYC为10us，即最大频率为100K。
 
 ![image-20230202181656615](https://user-images.githubusercontent.com/100147572/216307006-248f6c43-5f2d-4826-8554-303c87de36eb.png)
 
-**Phrase描述：**9bit/phrase
+**Phrase描述：** 9bit/phrase
 
 ID Address：匹配从机地址，D1-D7+读写标志信号，可以识别128个从机，OV5640的Slave ID Address为0x78，数据传输方向为MSB->LSB。
 
