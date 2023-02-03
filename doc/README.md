@@ -343,6 +343,7 @@ IIC的写时序和SCCB相同，BYTE WRITE模式下的单字节写（一次只写
 写时序部分只需要在读时序基础上，实现下图时序部分，将方向信号`dir`置0时表示写模式。
 
 ![image-20230202183318546](https://user-images.githubusercontent.com/100147572/216308386-468e2ddb-f7b9-4d08-9ee4-fa2d201a5f38.png)
+
 信号描述：
 
 | Signal Name | Signal Type | Description                                                  |
@@ -361,4 +362,4 @@ IIC的写时序和SCCB相同，BYTE WRITE模式下的单字节写（一次只写
 | done        | internal    | 传输完成信号                                                 |
 | dir         | internal    | 传输方向，0代表写事务，1代表读事务                           |
 
-**注意：**只有当`slc`为低电平时`sda`才能发生跳变，`slc`为高电平时，`sda`不应发生数据变化。因为在IIC协议中，`sda`和`slc`同时处于高电平代表数据传输的开始条件，所以要在`slc == 0`的时候发送数据，即`start`到来代表传输开始的下一个时钟周期`scl`被拉低，`cfg_cnt`开始计数。
+**注意：** 只有当`slc`为低电平时`sda`才能发生跳变，`slc`为高电平时，`sda`不应发生数据变化。因为在IIC协议中，`sda`和`slc`同时处于高电平代表数据传输的开始条件，所以要在`slc == 0`的时候发送数据，即`start`到来代表传输开始的下一个时钟周期`scl`被拉低，`cfg_cnt`开始计数。
