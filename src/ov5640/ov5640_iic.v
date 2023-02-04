@@ -198,6 +198,6 @@ always @(*) begin
 end	
 
 assign iic_sda = (flag_ack == 1'b1) ? 1'bz : iic_sda_r;
-assign dir = wdata[24];
+assign dir = wsda_r[24];
 
 endmodule
