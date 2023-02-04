@@ -363,3 +363,35 @@ IIC的写时序和SCCB相同，BYTE WRITE模式下的单字节写（一次只写
 | dir         | internal    | 传输方向，0代表写事务，1代表读事务                           |
 
 **注意：** 只有当`slc`为低电平时`sda`才能发生跳变，`slc`为高电平时，`sda`不应发生数据变化。因为在IIC协议中，`sda`和`slc`同时处于高电平代表数据传输的开始条件，所以要在`slc == 0`的时候发送数据，即`start`到来代表传输开始的下一个时钟周期`scl`被拉低，`cfg_cnt`开始计数。
+
+**板级验证注意：**
+
+1.   调试OV5640摄像头时必须先供时钟（XCLK）
+2.   IIC时钟不能超过100K
+3.   XVCLK时钟频率选取24M的典型值（RTFM）
+4.   综合属性设置 SOFT->NO，否则读到的数据线为FF
+
+### 摄像头配置
+
+通过摄像头配置使用设计好的IIC模块对寄存器组进行统一配置，配置每一个寄存器只需要给出一个`start`信号并给出`wdata`值（包括了读写操作、地址线、数据）。
+
+时序设计：
+
+![image-20230204170051215](https://user-images.githubusercontent.com/100147572/216761059-d411d923-1ee8-4464-a922-4f503006becc.png)
+
+| Signal Name | Siganal Type | Description                                                  |
+| ----------- | ------------ | ------------------------------------------------------------ |
+| iic_scl     | output       | IIC模块输出时钟                                              |
+| iic_sda     | inout        | IIC模块数据                                                  |
+| estart      | input        | 调试开始信号                                                 |
+| ewdata      | input        | 调试数据                                                     |
+| riic_data   | output       | IIC模块读数据                                                |
+| start       | internal     | 单个寄存器配置开始信号，从第二个寄存器开始使用busy的下降沿产生 |
+| cfg_idx     | internal     | 寄存器配置编号                                               |
+| busy_n      | internal     | IIC模块busy信号下降沿捕捉，用来产生下一个寄存器配置的start信号 |
+| iic_wdata   | internal     | 写入IIC模块的寄存器配置信息                                  |
+| iic_start   | internal     | IIC模块配置开始信号                                          |
+| cfg_done    | internal     | 所有寄存器全部配置完成信号                                   |
+| cnt_200us   | internal     | 寄存器配置完ANUM个之后延时200us之后发送结束信号              |
+
+时序设计较为简单，在IIC模块基础上封装了一层用来对所有寄存器进行统一批次配置。
