@@ -1,22 +1,22 @@
 module ov5460_iic (
-	input				      sclk,
-	input				      s_rst_n,
+	input			sclk,
+	input			s_rst_n,
 	
-	output reg			  iic_scl,
-	inout				      iic_sda,
-	input				      start,
-	input [31:0]		  wdata,
+	output reg		iic_scl,
+	inout			iic_sda,
+	input			start,
+	input [31:0]		wdata,
 	output reg [7:0]	riic_data,
-	output reg			  busy
+	output reg		busy
 );
 
 reg [31:0]		wsda_r;
-reg [5:0]		  cfg_cnt;
-reg				    iic_sda_r;
-reg				    flag_ack;
-reg [3:0]		  delay_cnt;
-reg				    done;
-wire			    dir;
+reg [5:0]		cfg_cnt;
+reg			iic_sda_r;
+reg			flag_ack;
+reg [3:0]		delay_cnt;
+reg			done;
+wire			dir;
 
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
