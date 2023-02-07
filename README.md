@@ -9,14 +9,12 @@
 2.   13条地址线，24位数据端口的SDRAM控制器，支持读写和自动刷新指令
 3.   自动读写FIFO，深度512bit。写FIFO深度超过256bit时自动读入SDRAM，读FIFO深度小于256bit时自动写入VGA/LCD驱动
 4.   支持800*480分辨率的VGA/LCD驱动模块
-5.   已通过Vivado综合
+5.   支持OV5640摄像头模块实时显示
 
-![image](https://user-images.githubusercontent.com/100147572/216013259-19d72351-1e46-4a20-ad95-f45a0511561f.png)
-![image](https://user-images.githubusercontent.com/100147572/216013490-6c6febf8-bcb7-4f7d-acd1-83a531a92bd3.png)
-
+![image](https://user-images.githubusercontent.com/100147572/217203462-0a895eee-747b-4e13-8b9e-b4e034de0148.png)
+![image](https://user-images.githubusercontent.com/100147572/217203566-b5681a00-800b-45c8-a6e7-1c4ab81bca92.png)
 ### ToDo：
 
 1.   板级功能测试
-2.   OV5640摄像头实时图像采集显示
-3.   C++ Model模拟器
-4.   修改AXI4总线接口
+2.   C++ Model模拟器
+3.   修改AXI4总线接口
