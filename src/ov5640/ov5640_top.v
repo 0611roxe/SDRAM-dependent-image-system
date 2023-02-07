@@ -1,18 +1,24 @@
-`define SIM
 module ov5640_top(
-	input				    clk_sys50m,
-	input				    s_rst_n,
-	input				    clk_sys24m,
+	input				clk_sys50m,
+	input				s_rst_n,
+	input				clk_sys24m,
 	`ifdef SIM
-	input				    div_clk,
+	input				div_clk,
 	`endif 
 	output wire			ov5640_pwdn ,
 	output wire			ov5640_resetb,
 	output wire			ov5460_xclk,
 	output wire 		ov5460_iic_scl,
-	inout				    ov5460_iic_sda,
+	inout				ov5460_iic_sda,
 
-	input				    estart,
+	input				ov5640_pclk,	
+	input				ov5640_href,	
+	input				ov5640_vsync,	
+	input [7:0]			ov5640_data,	
+	output wire [15:0]	m_data,
+	output wire			m_wr_en,
+
+	input				estart,
 	input [31:0]		ewdata,
 	output wire	[7:0]	riic_data
 );
@@ -57,12 +63,22 @@ power_ctrl u_power_ctrl(
 
 ov5460_cfg u_ov5460_cfg(
 	.sclk				(div_clk		),
-	.s_rst_n			(s_rst_n		),
+	.s_rst_n			(s_rst_n & power_done		),
 	.iic_scl			(ov5640_iic_scl	),
 	.iic_sda			(ov5640_iic_sda	),
 	.estart				(estart			),
 	.ewdata				(ewdata			),
 	.riic_data			(riic_data		)
+);
+
+ov5640_data u_ov5640_data(
+	.s_rst_n				(s_rst_n	),
+	.ov5640_pclk			(ov5640_pclk),
+	.ov5640_href			(ov5640_href),
+	.ov5640_vsync			(ov5640_vsync),
+	.ov5640_data			(ov5640_data),
+	.m_data					(m_data		),
+	.m_wr_en				(m_wr_en	)
 );
 
 endmodule
