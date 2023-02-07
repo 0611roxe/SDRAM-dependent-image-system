@@ -8,16 +8,16 @@ module sdram_read (
 
 	input				ref_req,
 	input				rd_trig,
-	input		[23:0]	sdram_dq,
+	input		[15:0]	sdram_dq,
 	output reg [3:0]	rd_cmd,
 	output reg [12:0]	rd_addr,
-	output wire [1:0]	bank_addr,
+	output reg [1:0]	bank_addr,
 
 	output reg			rfifo_wr_en,
-	output wire	[23:0]	rfifo_wr_data
+	output wire	[15:0]	rfifo_wr_data
 );
 
-localparam	RROW_ADDR_END = 937;
+localparam	RROW_ADDR_END = 1440;
 localparam	RCOL_MADDR_END = 256;
 localparam	RCOL_FADDR_END = 512;
 
@@ -202,10 +202,17 @@ end
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
 		row_addr <= 'd0;
-	else if(col_addr == (RCOL_MADDR_END - 1) && row_addr == RROW_ADDR_END)
+	else if(col_addr == (RCOL_FADDR_END - 1) && row_addr == RROW_ADDR_END)
 		row_addr <= 'd0;
 	else if(sd_row_end == 1'b1)
 		row_addr <= row_addr + 1'b1;
+end	
+
+always @(posedge sclk or negedge s_rst_n) begin
+	if(s_rst_n == 1'b0)
+		bank_addr <= 'd0;
+	else if(col_addr == (RCOL_FADDR_END - 1) && row_addr == RROW_ADDR_END)
+		bank_addr <= ~bank_addr;
 end	
 
 always @(posedge sclk or negedge s_rst_n) begin
@@ -228,8 +235,8 @@ end
 
 assign col_addr = {col_cnt, burst_cnt_r};
 // assign col_addr = {7'b0, burst_cnt_r};
-assign bank_addr = 2'b00;
+// assign bank_addr = 2'b00;
 assign rd_req = state[1];
-assign rfifo_wr_data = sdram_dq[23:0];
+assign rfifo_wr_data = sdram_dq[15:0];
 
 endmodule
