@@ -10,11 +10,11 @@ module sdram_write (
 	input				wr_trig,
 	output reg [3:0]	wr_cmd,
 	output reg [12:0]	wr_addr,
-	output wire [1:0]	bank_addr,
-	output wire [23:0] 	wr_data,
+	output reg [1:0]	bank_addr,
+	output wire [15:0] 	wr_data,
 
 	output wire			wfifo_rd_en,
-	input	[23:0]		wfifo_rd_data
+	input	[15:0]		wfifo_rd_data
 );
 localparam	S_IDEL = 5'b0_0001;
 localparam	S_REQ = 5'b0_0010;
@@ -28,7 +28,7 @@ localparam	CMD_AREF = 4'b0001;
 localparam	CMD_ACT = 4'b0011;
 localparam	CMD_WR = 4'b0100;
 
-localparam	WROW_ADDR_END = 937;
+localparam	WROW_ADDR_END = 1440;
 localparam	WCOL_MADDR_END = 256;
 localparam	WCOL_FADDR_END = 512;
 
@@ -192,7 +192,7 @@ end
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
 		row_addr <= 'd0;
-	else if(col_addr == (WCOL_MADDR_END - 1) && row_addr == WROW_ADDR_END)
+	else if(col_addr == (WCOL_FADDR_END - 1) && row_addr == WROW_ADDR_END)
 		row_addr <= 'd0;
 	else if(sd_row_end == 1'b1)
 		row_addr <= row_addr + 1'b1;
@@ -209,6 +209,13 @@ end
 
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
+		bank_addr <= 2'b11;
+	else if(col_addr == (WCOL_FADDR_END - 1) && row_addr == WROW_ADDR_END)
+		bank_addr <= ~bank_addr;
+end	
+
+always @(posedge sclk or negedge s_rst_n) begin
+	if(s_rst_n == 1'b0)
 		flag_wr_end <= 'b0;
 	else if((state == S_PRE && ref_req == 1'b1) || (state == S_PRE && flag_wr == 1'b0))
 		flag_wr_end <= 1'b1;
@@ -218,7 +225,7 @@ end
 
 assign col_addr = {col_cnt, burst_cnt_r};
 // assign col_addr = {7'd0,burst_cnt_r};
-assign bank_addr = 2'b00;
+// assign bank_addr = 2'b00;
 assign wr_req = state[1];
 assign wfifo_rd_en = state[3];
 assign wr_data = wfifo_rd_data;
