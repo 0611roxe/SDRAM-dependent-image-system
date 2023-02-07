@@ -1,6 +1,6 @@
 module power_ctrl (
-	input				    sclk,	//50MHz 20ns
-	input				    s_rst_n,
+	input				sclk,	//50MHz 20ns
+	input				s_rst_n,
 	output wire			ov5640_pwdn,
 	output wire			ov5640_resetb,
 	output wire			power_done
@@ -31,7 +31,7 @@ end
 always @(posedge sclk or negedge s_rst_n) begin
 	if(s_rst_n == 1'b0)
 		cnt_21ms <= 'd0;
-	else if(ov5640_resetb == 1'b1)
+	else if(ov5640_resetb == 1'b1 && power_done == 1'b0)
 		cnt_21ms <= cnt_21ms + 1'b1;
 end
 
