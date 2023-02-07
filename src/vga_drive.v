@@ -7,23 +7,35 @@ module vga_drive (
 	`endif
 	output wire				vga_hsync,
 	output wire				vga_vsync,
-	output wire [23:0]			vga_rgb,
+	output wire [15:0]		vga_rgb,
 
 	output reg				vga_en,
-	input [23:0]				img_data
+	input [15:0]			img_data
 );
 
-localparam H_TOTAL_TIME = 1056;
-localparam H_OZVAL_TIME = 800;
-localparam H_SYNC_TIME = 128;
-localparam H_BACK_PORCH = 88;
-localparam H_FRONT_PORCH = 40;
+//1024 * 768
+//1344 * 806 * 84 = 90994176 
+localparam H_TOTAL_TIME = 1344;
+localparam H_OZVAL_TIME = 1024;
+localparam H_SYNC_TIME = 136;
+localparam H_BACK_PORCH = 160;
+localparam V_TOTAL_TIME = 806;
+localparam V_OZVAL_TIME = 768;
+localparam V_SYNC_TIME = 6;
+localparam V_BACK_PORCH = 29;
 
-localparam V_TOTAL_TIME = 525;
-localparam V_OZVAL_TIME = 480;
-localparam V_SYNC_TIME = 2;
-localparam V_BACK_PORCH = 33;
-localparam V_FRONT_PORCH = 10;
+// 800 * 480
+// localparam H_TOTAL_TIME = 1056;
+// localparam H_OZVAL_TIME = 800;
+// localparam H_SYNC_TIME = 128;
+// localparam H_BACK_PORCH = 88;
+// localparam H_FRONT_PORCH = 40;
+
+// localparam V_TOTAL_TIME = 525;
+// localparam V_OZVAL_TIME = 480;
+// localparam V_SYNC_TIME = 2;
+// localparam V_BACK_PORCH = 33;
+// localparam V_FRONT_PORCH = 10;
 
 reg [10:0]			cnt_h;
 reg [9:0]			cnt_v;
@@ -70,9 +82,9 @@ always @(posedge sclk) begin
 end
 
 assign data_req = 	((cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1)) && 
-			(cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1 + H_OZVAL_TIME)) &&
-			cnt_v >= (V_SYNC_TIME + V_BACK_PORCH) && 
-			cnt_v < (V_SYNC_TIME + V_BACK_PORCH + V_OZVAL_TIME)) ? 1'b1 : 1'b0;
+					(cnt_h >= ((H_SYNC_TIME + H_BACK_PORCH - 1) - 1 + H_OZVAL_TIME)) &&
+					cnt_v >= (V_SYNC_TIME + V_BACK_PORCH + 24) && 
+					cnt_v < (V_SYNC_TIME + V_BACK_PORCH + V_OZVAL_TIME - 24)) ? 1'b1 : 1'b0;
 assign vga_rgb = (vga_en == 1'b1) ? img_data : 24'h0;
 assign vga_hsync = (cnt_h < H_SYNC_TIME) ? 1'b1 : 1'b0;
 assign vga_vsync = (cnt_v < V_SYNC_TIME) ? 1'b1 : 1'b0;
